@@ -1,0 +1,62 @@
+[package]
+name = "elastic_rust"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[package.metadata.docs.rs]
+all-features = true
+
+[features]
+default = ["native-tls"]
+
+# beta and experimental APIs
+beta-apis = []
+experimental-apis = ["beta-apis"]
+
+# optional TLS
+native-tls = ["reqwest/native-tls"]
+rustls-tls = ["reqwest/rustls-tls"]
+
+[dependencies]
+tokio = { version = "*", features = ["full"]  }
+rocket = { version = "0.5.0", features = ["secrets", "json"] }
+sea-orm = { version = "0.12", features = [ 
+	'sqlx-postgres', 
+	'runtime-tokio-rustls', 
+	"macros" 
+] }
+base64 = "^0.11"
+bytes = "^1.0"
+dyn-clone = "~1"
+lazy_static = "1.4"
+percent-encoding = "2.1.0"
+sysinfo="*"
+elasticsearch = "8.5.0-alpha.1"
+reqwest = { version = "~0.11", default-features = false, features = ["gzip", "json"] }
+url = "^2.1"
+serde = { version = "~1", features = ["derive"] }
+serde_json = "~1"
+serde_with = "~1"
+void = "1.0.2"
+
+[dependencies.rocket_dyn_templates]
+version = "0.1.0"
+features = ["handlebars"]
+
+[dev-dependencies]
+chrono = { version = "^0.4", features = ["serde"] }
+clap = "~2"
+failure = "0.1.5"
+futures = "0.3.1"
+http = "0.2"
+hyper = { version = "0.14", default-features = false, features = ["tcp", "stream", "server"] }
+os_type = "2.2"
+regex="1.4"
+sysinfo = "0.12.0"
+textwrap = "^0.11"
+xml-rs = "^0.8"
+
+[build-dependencies]
+rustc_version = "0.2"
