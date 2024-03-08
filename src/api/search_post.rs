@@ -4,7 +4,7 @@ use crate::api::post::Post;
 use crate::elastic::client::create_client;
 use rocket::response::status::Custom;
 
-static COURSES_INDEX: &'static str = "courses";
+static POSTS_INDEX: &'static str = "posts";
 
 #[get("/?<q>")]
 pub async fn search_post(q: &str) -> Result<sea_orm::prelude::Json, Custom<String>> {
@@ -21,7 +21,7 @@ pub async fn search_post(q: &str) -> Result<sea_orm::prelude::Json, Custom<Strin
 					"query": q,
 					"fields": ["name", "description"],
 					"operator": "and",
-					"type": "best_fields",
+					"type": "cross_fields",
 				}
 			}
 		})
@@ -31,7 +31,7 @@ pub async fn search_post(q: &str) -> Result<sea_orm::prelude::Json, Custom<Strin
 		Err(err) => return Err(Custom(Status::NotFound, format!("Error al crear el índice: {}", err).into())),
 	};
 	let mut response = match client
-		.search(SearchParts::Index(&[COURSES_INDEX]))
+		.search(SearchParts::Index(&[POSTS_INDEX]))
 		.body(query)
 		.pretty(true)
 		.send()
