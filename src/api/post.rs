@@ -79,19 +79,19 @@ impl Post {
 					},
 					"name": {
 						"type": "text",
-						"analyzer": "expand"
+						"analyzer": "edge_ngram_analyzer"
 					},
 					"description": {
 						"type": "text",
-						"analyzer": "expand"
+						"analyzer": "edge_ngram_analyzer"
 					},
 					"username": {
 						"type": "text",
-						"analyzer": "expand"
+						"analyzer": "edge_ngram_analyzer"
 					},
 					"email": {
 						"type": "text",
-						"analyzer": "expand"
+						"analyzer": "edge_ngram_analyzer"
 					}
 				},
 				"_routing": {
@@ -107,11 +107,28 @@ impl Post {
 				"analysis": {
 					"analyzer": {
 						"expand": {
-						"filter": ["lowercase"],
-						"tokenizer": "standard",
-						"type": "custom"
+							"filter": ["lowercase"],
+							"tokenizer": "standard",
+							"type": "custom"
+						},
+						"edge_ngram_analyzer": {
+							"filter": [
+								"lowercase"
+							],
+							"tokenizer": "edge_ngram_tokenizer"
 						}
 					},
+					"tokenizer": {
+						"edge_ngram_tokenizer": {
+							"type": "edge_ngram",
+							"min_gram": 2,
+							"max_gram": 10,
+							"token_chars": [
+								"letter",
+								"digit"
+							]
+						}
+					}
 				}
 			}
 		})
