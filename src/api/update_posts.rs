@@ -8,13 +8,13 @@ use rocket::response::status::Custom;
 
 static POSTS_INDEX: &'static str = "posts";
 
-#[put("/", data="<post>")]
-pub async fn update_post(post: Json<Post>) -> Result<sea_orm::prelude::Json, Custom<String>> {
+#[put("/<post_id>", data="<post>")]
+pub async fn update_post(post_id: &str, post: Json<Post>) -> Result<sea_orm::prelude::Json, Custom<String>> {
 	let client = match create_client() {
 		Ok(client) => client,
 		Err(err) => return Err(Custom(Status::NotFound, format!("Error al crear el índice: {}", err).into()))
 	};
-	if !check_if_exists(&client, &post.id()).await {
+	if !check_if_exists(&client, post_id).await {
 		return Err(Custom(Status::NotFound, "Post not found".into()));
 	}
 	

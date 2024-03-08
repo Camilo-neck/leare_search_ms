@@ -57,7 +57,7 @@ fn create(post: Json<Post<'_>>) -> Result<sea_orm::prelude::Json, Status> {
 async fn main() -> Result<(), rocket::Error> {
     let _rocket = rocket::build()
         .mount("/", routes![index, create])
-        .mount("/courses", routes![index_post, search_post, update_post, delete_post])
+        .mount("/posts", routes![index_post, search_post, update_post, delete_post])
         .launch()
         .await?;
 
