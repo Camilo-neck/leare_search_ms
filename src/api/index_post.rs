@@ -16,22 +16,34 @@ use rocket::response::status::Custom;
 static POSTS_INDEX: &'static str = "posts";
 
 #[post("/", data="<post>")]
-pub async fn index_post(post: Json<Post>) -> Result<(), Custom<String>> {
+pub async fn index_post(post: Json<Post>) -> Result<Custom<sea_orm::prelude::Json>, Custom<sea_orm::prelude::Json>> {
 	let client = match create_client() {
         Ok(client) => client,
-        Err(err) => return Err(Custom(Status::NotFound, format!("Error al crear el índice: {}", err).into()))
+        Err(err) => return Err(Custom(Status::NotFound, json!({
+            "status": Status::NotFound,
+            "message": format!("Error al crear el índice: {}", err)
+        })))
     };
     if let Err(err) = create_index_if_not_exists(&client, false, &post).await {
-        return Err(Custom(Status::NoContent, format!("Error al crear el índice: {}", err).into()));
+        return Err(Custom(Status::NoContent, json!({
+            "status": Status::NoContent,
+            "message": format!("Error al crear el índice: {}", err)
+        })));
     };
     if let Err(err) = set_refresh_interval(&client, json!("-1")).await {
-        return Err(Custom(Status::NotAcceptable, format!("Error al crear el índice: {}", err).into()));
+        return Err(Custom(Status::NotAcceptable, json!({
+            "status": Status::NotAcceptable,
+            "message": format!("Error al crear el índice: {}", err)
+        })));
     };
 
     match index_posts(&client, &[post.into_inner()]).await {
         Ok(response) => {
             if response.contains("Error") {
-                return Err(Custom(Status::InternalServerError, response));
+                return Err(Custom(Status::InternalServerError, json!({
+                    "status": Status::InternalServerError,
+                    "message": response
+                })));
             }
         },
         Err(err) => return Err(Custom(Status::NotImplemented, format!("Error al crear el índice: {}", err).into())),
@@ -40,7 +52,10 @@ pub async fn index_post(post: Json<Post>) -> Result<(), Custom<String>> {
     if let Err(err) = set_refresh_interval(&client, json!(null)).await {
         return Err(Custom(Status::NotExtended, format!("Error al crear el índice: {}", err).into()));
     };
-    Ok(())
+    Ok(Custom(Status::Created, json!({
+        "status": Status::Created,
+        "message": "Post created successfully",
+    })))
 }
 
 async fn set_refresh_interval(client: &Elasticsearch, interval: Value) -> Result<(), Error> {

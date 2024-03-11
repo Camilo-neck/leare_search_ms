@@ -7,7 +7,7 @@ use rocket::response::status::Custom;
 static POSTS_INDEX: &'static str = "posts";
 
 #[get("/?<q>")]
-pub async fn search_post(q: &str) -> Result<sea_orm::prelude::Json, Custom<String>> {
+pub async fn search_post(q: &str) -> Result<Custom<sea_orm::prelude::Json>, Custom<sea_orm::prelude::Json>> {
 	let query = if q.is_empty() {
 		json!({
 			"query": {
@@ -28,7 +28,10 @@ pub async fn search_post(q: &str) -> Result<sea_orm::prelude::Json, Custom<Strin
 	};
 	let client = match create_client() {
 		Ok(client) => client,
-		Err(err) => return Err(Custom(Status::NotFound, format!("Error al crear el índice: {}", err).into())),
+		Err(err) => return Err(Custom(Status::InternalServerError, json!({
+			"status": Status::InternalServerError,
+			"message": format!("Error al crear el índice: {}", err)
+		}))),
 	};
 	let mut response = match client
 		.search(SearchParts::Index(&[POSTS_INDEX]))
@@ -37,17 +40,26 @@ pub async fn search_post(q: &str) -> Result<sea_orm::prelude::Json, Custom<Strin
 		.send()
 		.await {
 			Ok(response) => response,
-			Err(err) => return Err(Custom(Status::InternalServerError, format!("Error al buscar el índice: {}", err).into())),
+			Err(err) => return Err(Custom(Status::InternalServerError, json!({
+				"status": Status::InternalServerError,
+				"message": format!("Error al buscar el índice: {}", err)
+			}))),
 		};
 
 	response = match response.error_for_status_code() {
 		Ok(response) => response,
-		Err(err) => return Err(Custom(Status::InternalServerError, format!("Error al buscar el índice: {}", err).into())),
+		Err(err) => return Err(Custom(Status::InternalServerError, json!({
+			"status": Status::InternalServerError,
+			"message": format!("Error al buscar el índice: {}", err)
+		}))),
 	};
 
 	let json: Value = match response.json().await {
 		Ok(value) => value,
-		Err(err) => return Err(Custom(Status::InternalServerError, format!("Error parsing JSON response: {}", err).into())),
+		Err(err) => return Err(Custom(Status::InternalServerError, json!({
+			"status": Status::InternalServerError,
+			"message": format!("Error parsing JSON response: {}", err)
+		}))),
 	};
 	let posts: Vec<Post> = json!(&json["hits"]["hits"])
 		.as_array()
@@ -56,9 +68,9 @@ pub async fn search_post(q: &str) -> Result<sea_orm::prelude::Json, Custom<Strin
 		.map(|hit| serde_json::from_value(hit["_source"].clone()).unwrap())
 		.collect();
 	println!("Searching for: {}", q);
-    Ok(json!({
+    Ok(Custom(Status::Ok, json!({
 		"status": Status::Ok,
 		"message": format!("Found {} posts", posts.len()),
 		"posts": posts,
-	}))
+	})))
 }
