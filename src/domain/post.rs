@@ -1,5 +1,6 @@
 use rocket::serde::{ Serialize, Deserialize };
 use serde_json::json;
+use uuid::Uuid;
 
 // A Course
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
@@ -11,7 +12,7 @@ pub enum Post {
 }
 
 impl Post {
-	pub fn id(&self) -> String {
+	pub fn id(&self) -> Uuid {
 		match self {
 			Post::Course(co) => co.id.clone(),
 			Post::Category(ca) => ca.id.clone(),
@@ -23,11 +24,12 @@ impl Post {
 		match self {
 			Post::Course(co) => json!({
 				"script": {
-					"source": "ctx._source.name = params.name; ctx._source.description = params.description",
+					"source": "ctx._source.name = params.name; ctx._source.description = params.description ; ctx._source.picture = params.picture",
 					"lang": "painless",
 					"params": {
 						"name": co.name,
-						"description": co.description
+						"description": co.description,
+						"picture": co.picture
 					}
 				},
 				"query": {
@@ -52,12 +54,13 @@ impl Post {
 			}),
 			Post::User(u) => json!({
 				"script": {
-					"source": "ctx._source.name = params.name; ctx._source.username = params.username; ctx._source.email = params.email",
+					"source": "ctx._source.name = params.name; ctx._source.nickname = params.nickname; ctx._source.lastname = params.lastname; ctx._source.picture = params.picture",
 					"lang": "painless",
 					"params": {
 						"name": u.name,
-						"username": u.username,
-						"email": u.email
+						"lastname": u.lastname,
+						"nickname": u.nickname,
+						"picture": u.picture
 					}
 				},
 				"query": {
@@ -85,13 +88,17 @@ impl Post {
 						"type": "text",
 						"analyzer": "edge_ngram_analyzer"
 					},
-					"username": {
+					"nickname": {
 						"type": "text",
 						"analyzer": "edge_ngram_analyzer"
 					},
-					"email": {
+					"lastname": {
 						"type": "text",
 						"analyzer": "edge_ngram_analyzer"
+					},
+					"picture": {
+						"type": "text",
+						"analyzer": "keyword"
 					}
 				},
 				"_routing": {
@@ -133,13 +140,43 @@ impl Post {
 			}
 		})
 	}
+
+	pub fn query(&self, q: &str) -> sea_orm::prelude::Json {
+		match self {
+			Post::Course(_) => json!({
+				"query": {
+					"multi_match": {
+						"query": q,
+						"fields": ["name", "description"]
+					}
+				}
+			}),
+			Post::Category(_) => json!({
+				"query": {
+					"multi_match": {
+						"query": q,
+						"fields": ["name"]
+					}
+				}
+			}),
+			Post::User(_) => json!({
+				"query": {
+					"multi_match": {
+						"query": q,
+						"fields": ["name", "lastname", "nickname"]
+					}
+				}
+			})
+		}
+	}
 }
 
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub struct Course {
-	pub id: String,
+	pub id: Uuid,
 	pub name: String,
 	pub description: String,
+	pub picture: String
 }
 
 impl From<Course> for Post {
@@ -150,7 +187,7 @@ impl From<Course> for Post {
 
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub struct Category {
-	pub id: String,
+	pub id: Uuid,
 	pub name: String
 }
 
@@ -162,10 +199,11 @@ impl From<Category> for Post {
 
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub struct User {
-	pub id: String,
+	pub id: Uuid,
 	pub name: String,
-	pub username: String,
-	pub email: String
+	pub lastname: String,
+	pub nickname: String,
+	pub picture: String,
 }
 
 impl From<User> for Post {
