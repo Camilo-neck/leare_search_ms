@@ -41,7 +41,7 @@ pub fn create_client() -> Result<Elasticsearch, Error> {
                 url.set_password(None).unwrap();
                 pass
             }
-            None => std::env::var("ES_PASSWORD").unwrap_or_else(|_| "Z3j_yxy1PM2Rbx73M8-K".into()),
+            None => std::env::var("ES_PASSWORD").unwrap_or_else(|_| "password".into()),
         };
 
         Some(Credentials::Basic(username, password))
