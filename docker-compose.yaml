@@ -1,8 +1,8 @@
 version: '3'
 services:
-  search_db:
+  search-db:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.12.2
-    container_name: search_db
+    container_name: search-db
     environment:
       - cluster.name=docker-cluster
       - bootstrap.memory_lock=true
@@ -27,14 +27,14 @@ services:
     environment:
       - ROCKET_ADDRESS=0.0.0.0
       - ROCKET_PORT=3005
-      - ELASTICSEARCH_URL=http://search_db:9200
-      # - ELASTICSEARCH_URL=http://elastic:password@search_db:9200
+      - ELASTICSEARCH_URL=http://search-db:9200
+      # - ELASTICSEARCH_URL=http://elastic:password@search-db:9200
       - ES_USERNAME=elastic
       - ES_PASSWORD=password
     ports:
       - "3005:3005"
     depends_on:
-      - search_db
+      - search-db
     networks:
       - leare_network
 
