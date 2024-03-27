@@ -9,16 +9,12 @@ use rocket::{
 use serde_json::Value;
 use uuid::Uuid;
 
+use crate::domain::post_repository::PostResult;
 use crate::domain::{
     post::Post,
     post_repository::{PostRepository, PostRepositoryImpl},
 };
 
-#[derive(Debug, serde::Deserialize, serde::Serialize)]
-struct PostResult {
-	post: Post,
-	highlight: Value,
-}
 
 impl PostRepository for PostRepositoryImpl <'_> {
     async fn index(

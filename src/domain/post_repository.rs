@@ -1,10 +1,17 @@
 use elasticsearch::Elasticsearch;
 use rocket::{response::status::Custom, serde::json::Json};
+use serde_json::Value;
 use uuid::Uuid;
 
 use crate::infrastructure::client::create_client;
 
 use super::post::Post;
+
+#[derive(Debug, serde::Deserialize, serde::Serialize)]
+pub struct PostResult {
+	pub post: Post,
+	pub highlight: Value,
+}
 
 pub trait PostRepository {
 	async fn search(&self, query: sea_orm::prelude::Json) -> Result<Custom<sea_orm::prelude::Json>, Custom<sea_orm::prelude::Json>>;
