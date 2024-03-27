@@ -14,6 +14,12 @@ use crate::domain::{
     post_repository::{PostRepository, PostRepositoryImpl},
 };
 
+#[derive(Debug, serde::Deserialize, serde::Serialize)]
+struct PostResult {
+	post: Post,
+	highlight: Value,
+}
+
 impl PostRepository for PostRepositoryImpl <'_> {
     async fn index(
         &self,
@@ -231,11 +237,14 @@ impl PostRepository for PostRepositoryImpl <'_> {
 
 		println!("Response: {:#?}", json["hits"]["hits"]);
 
-		let posts: Vec<Post> = json!(&json["hits"]["hits"])
+		let posts: Vec<PostResult> = json!(&json["hits"]["hits"])
 			.as_array()
 			.unwrap()
 			.iter()
-			.map(|hit| serde_json::from_value(hit["_source"].clone()).unwrap())
+			.map(|hit| serde_json::from_value(json!({
+				"post": hit.get("_source").unwrap_or(&json!({})),
+				"highlight": hit.get("highlight").unwrap_or(&json!({})),
+			}).clone()).unwrap())
 			.collect();
 
 		Ok(Custom(Status::Ok, json!({

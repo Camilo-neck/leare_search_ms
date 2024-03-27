@@ -25,15 +25,25 @@ impl <'a> SearchPostUseCase <'a> {
 				"query": {
 					"multi_match": {
 						"query": q,
-						"fields": ["name", "description"],
+						"fields": ["name", "lastname", "nickname", "description"],
 						"operator": "and",
 						"type": "cross_fields",
 					}
+				},
+				"highlight": {
+					"fields": {
+						"name": {},
+						"lastname": {},
+						"nickname": {},
+						"description": {}
+					},
+					"pre_tags": ["<b>"],
+					"post_tags": ["</b>"]
 				}
 			})
 		};
+        println!("Cluster address: {:?}", std::env::var("ELASTICSEARCH_URL").unwrap());
 
-		println!("Query: {:#?}", query);
 		match self.post_repository.search(query).await {
 			Ok(response) => return Ok(response),
 			Err(e) => return Err(e)
