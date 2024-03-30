@@ -243,11 +243,7 @@ impl PostRepository for PostRepositoryImpl <'_> {
 			}).clone()).unwrap())
 			.collect();
 
-		Ok(Custom(Status::Ok, json!({
-			"status": Status::Ok,
-			"message": format!("Found {} posts", posts.len()),
-			"posts": posts,
-		})))
+		Ok(Custom(Status::Ok, json!(posts)))
     }
 
     async fn update(
