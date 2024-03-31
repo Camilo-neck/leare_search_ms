@@ -24,7 +24,7 @@ impl PostRepository for PostRepositoryImpl <'_> {
         // Implement the logic to index a post
 		let client = match &self.client {
 			Ok(client) => client,
-			Err(e) => return Err(Custom(Status::InternalServerError, json!({"message": e.to_string()})))
+			Err(e) => return Err(Custom(Status::InternalServerError, json!({"success": false, "message": e.to_string()})))
 		};
 		let body: Vec<BulkOperation<_>> = posts
 			.iter()
@@ -51,7 +51,7 @@ impl PostRepository for PostRepositoryImpl <'_> {
 		let json: Value = match response.json().await {
 			Ok(json) => json,
 			Err(e) => {
-				return Err(Custom(Status::InternalServerError, json!({"message": e.to_string()})));
+				return Err(Custom(Status::InternalServerError, json!({"success": false, "message": e.to_string()})));
 			}
 		};
 
@@ -84,12 +84,12 @@ impl PostRepository for PostRepositoryImpl <'_> {
 			let json: Value = match response.json().await {
 				Ok(json) => json,
 				Err(e) => {
-					return Err(Custom(Status::InternalServerError, json!({"message": e.to_string()})));
+					return Err(Custom(Status::InternalServerError, json!({"success": false, "message": e.to_string()})));
 				}
 			};
 
 			if json["errors"].as_bool().unwrap() {
-				return Err(Custom(Status::InternalServerError, json!({"message": "Failed to index posts"})));
+				return Err(Custom(Status::InternalServerError, json!({"success": false, "message": "Failed to index posts"})));
 			}
 		}
 			
@@ -99,7 +99,7 @@ impl PostRepository for PostRepositoryImpl <'_> {
 	async fn set_refresh_interval(&self, interval: Value) -> Result<(), Custom<sea_orm::prelude::Json>> {
 		let client = match &self.client {
 			Ok(client) => client,
-			Err(e) => return Err(Custom(Status::InternalServerError, json!({"message": e.to_string()})))
+			Err(e) => return Err(Custom(Status::InternalServerError, json!({"success": false, "message": e.to_string()})))
 		};
 		let response = match client
 			.indices()
@@ -109,7 +109,7 @@ impl PostRepository for PostRepositoryImpl <'_> {
 			.await {
 				Ok(response) => response,
 				Err(e) => {
-					return Err(Custom(Status::InternalServerError, json!({"message": e.to_string()})));
+					return Err(Custom(Status::InternalServerError, json!({"success": false, "message": e.to_string()})));
 				}
 			};
 
@@ -202,7 +202,7 @@ impl PostRepository for PostRepositoryImpl <'_> {
     ) -> Result<Custom<sea_orm::prelude::Json>, Custom<sea_orm::prelude::Json>> {
 		let client = match &self.client {
 			Ok(client) => client,
-			Err(e) => return Err(Custom(Status::InternalServerError, json!({"message": e.to_string()})))
+			Err(e) => return Err(Custom(Status::InternalServerError, json!({"success": false, "message": e.to_string()})))
 		};
 
 		let mut response = match client
@@ -213,21 +213,21 @@ impl PostRepository for PostRepositoryImpl <'_> {
 			.await {
 				Ok(response) => response,
 				Err(e) => {
-					return Err(Custom(Status::InternalServerError, json!({"message": e.to_string()})));
+					return Err(Custom(Status::InternalServerError, json!({"success": false, "message": e.to_string()})));
 				}
 			};
 
 		response = match response.error_for_status_code() {
 			Ok(response) => response,
 			Err(e) => {
-				return Err(Custom(Status::InternalServerError, json!({"message": e.to_string()})));
+				return Err(Custom(Status::InternalServerError, json!({"success": false, "message": e.to_string()})));
 			}
 		};
 
 		let json: Value = match response.json().await {
 			Ok(json) => json,
 			Err(e) => {
-				return Err(Custom(Status::InternalServerError, json!({"message": e.to_string()})));
+				return Err(Custom(Status::InternalServerError, json!({"success": false, "message": e.to_string()})));
 			}
 		};
 
@@ -253,7 +253,7 @@ impl PostRepository for PostRepositoryImpl <'_> {
     ) -> Result<Custom<sea_orm::prelude::Json>, Custom<sea_orm::prelude::Json>> {
 		  let client = match &self.client {
 			Ok(client) => client,
-			Err(e) => return Err(Custom(Status::InternalServerError, json!({"message": e.to_string()})))
+			Err(e) => return Err(Custom(Status::InternalServerError, json!({"success": false, "message": e.to_string()})))
 		};
 
 		let response = match client
@@ -264,19 +264,19 @@ impl PostRepository for PostRepositoryImpl <'_> {
 			.await {
 				Ok(response) => response,
 				Err(e) => {
-					return Err(Custom(Status::InternalServerError, json!({"message": e.to_string()})));
+					return Err(Custom(Status::InternalServerError, json!({"success": false, "message": e.to_string()})));
 				}
 			};
 		
 		match response.error_for_status_code() {
 			Ok(response) => response,
 			Err(e) => {
-				return Err(Custom(Status::InternalServerError, json!({"message": e.to_string()})));
+				return Err(Custom(Status::InternalServerError, json!({"success": false, "message": e.to_string()})));
 			}
 		};
 		
 		Ok(Custom(Status::Ok, json!({
-			"status": Status::Ok,
+			"success": true,
 			"message": format!("Post {} updated successfully", post_id)
 		})))
     }
@@ -287,7 +287,7 @@ impl PostRepository for PostRepositoryImpl <'_> {
     ) -> Result<Custom<sea_orm::prelude::Json>, Custom<sea_orm::prelude::Json>> {
 		  let client =  match &self.client {
 			Ok(client) => client,
-			Err(e) => return Err(Custom(Status::InternalServerError, json!({"message": e.to_string()})))	
+			Err(e) => return Err(Custom(Status::InternalServerError, json!({"success": false, "message": e.to_string()})))	
 		  };
 
 		  let response = match client
@@ -304,19 +304,19 @@ impl PostRepository for PostRepositoryImpl <'_> {
 			.await {
 				Ok(response) => response,
 				Err(e) => {
-					return Err(Custom(Status::InternalServerError, json!({"message": e.to_string()})));
+					return Err(Custom(Status::InternalServerError, json!({"success": false, "message": e.to_string()})));
 				}
 			};
 
 			match response.error_for_status_code() {
 				Ok(response) => response,
 				Err(e) => {
-					return Err(Custom(Status::InternalServerError, json!({"message": e.to_string()})));
+					return Err(Custom(Status::InternalServerError, json!({"success": false, "message": e.to_string()})));
 				}
 			};
 
-			Ok(Custom(Status::NoContent, json!({
-				"status": Status::NoContent
+			Ok(Custom(Status::Ok, json!({
+				"success": true,
 			})))
     }
 }

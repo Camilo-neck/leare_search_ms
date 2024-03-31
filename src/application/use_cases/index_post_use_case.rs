@@ -28,7 +28,7 @@ impl <'a> IndexPostUseCase <'a> {
 			Ok(response) => {
 				if response.contains("Error") {
 					return Err(Custom(Status::InternalServerError, json!({
-						"status": Status::InternalServerError,
+						"success": false,
 						"message": response
 					})))
 				}
@@ -41,7 +41,7 @@ impl <'a> IndexPostUseCase <'a> {
 		};
 
 		Ok(Custom(Status::Created, json!({
-			"status": Status::Created,
+			"success": true,
 			"message": "Post indexed successfully"
 		})))
 	}
