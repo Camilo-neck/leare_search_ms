@@ -9,10 +9,9 @@ use rocket::{
 use serde_json::Value;
 use uuid::Uuid;
 
-use crate::domain::post_repository::PostResult;
 use crate::domain::{
     post::Post,
-    post_repository::{PostRepository, PostRepositoryImpl},
+    post_repository::{PostRepository, PostRepositoryImpl, PostResult},
 };
 
 
