@@ -1,5 +1,7 @@
 use application::use_cases::{delete_post_use_case::DeletePostUseCase, index_post_use_case::IndexPostUseCase, search_post_use_case::SearchPostUseCase, update_post_use_case::UpdatePostUseCase};
 use domain::post_repository::PostRepositoryImpl;
+use rocket::{http::Status, Request};
+use serde_json::{json, Value};
 use std::sync::Arc;
 
 
@@ -34,12 +36,37 @@ impl <'a> App <'a> {
 
 }
 
+#[catch(404)]
+fn not_found(req: &Request) -> Value {
+    json!({
+        "success": false,
+        "message": format!("{} not found", req.uri())
+    })
+}
+
+#[catch(500)]
+fn internal_error() -> Value {
+    json!({
+        "success": false,
+        "message": format!("Internal server error")
+    })
+}
+
+#[catch(default)]
+fn default(status: Status, req: &Request) -> Value {
+    json!({
+        "success": false,
+        "message": format!("{}: {}", status.code, req.uri())
+    })
+}
+
 
 #[rocket::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>>{
     let app = App::new();
     rocket::build()
     .manage(app)
+    .register("/", catchers![internal_error, not_found, default])
     .mount("/posts", interfaces::routes::routes())
     .launch()
     .await?;
